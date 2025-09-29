@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目导航 - 全屏风雪花</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+    background-color: #0a0a0a;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+  }
+
+  canvas#snow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    z-index: 10;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+    margin: 0;
+    font-weight: 600;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1000px;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 10;
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 10px 0px;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: transform 0.25s, box-shadow 0.25s;
+    cursor: pointer;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .card img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .card h3 {
+    margin: 10px 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+  }
+
+  .btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 18px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.3s;
+  }
+
+  .btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.6rem; }
+    .card h3 { font-size: 1.1rem; }
+    .card img { width: 60px; height: 60px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="snow"></canvas>
+
+
+<div class="grid">
+  <div class="card" onclick="go('/album/')">
+    <img src="https://img.icons8.com/fluency/96/photo-album.png" alt="相册">
+    <h3>相册</h3>
+    <a class="btn" href="/album/">进入</a>
+  </div>
+</div>
+
+<script>
+// ----------------- 全屏雪花 + 立体感光晕 -----------------
+const canvas = document.getElementById('snow');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+window.addEventListener('resize', ()=>{
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
+
+class Snowflake {
+  constructor(){
+    this.reset(true);
+  }
+
+  reset(init=false){
+    this.x = Math.random()*width;
+    this.y = init ? Math.random()*height : -10;
+    this.depth = Math.random(); // 0-1 深度，用于远近感
+    this.size = 2 + 2*this.depth; // 2~4px
+    this.speedY = 0.5 + 1.0*this.depth; // 远的慢，近的快
+    this.speedX = Math.random()*0.5 - 0.25;
+    this.opacity = 0.5 + 0.5*this.depth; // 雪花主体亮度
+    this.angle = Math.random()*Math.PI*2;
+    this.rotationSpeed = (Math.random()*0.01 - 0.005);
+    this.scale = 0.7 + 0.3*this.depth;
+
+    // 光晕属性
+    this.glow = 3 + 3*this.depth; // 远的光晕小，近的光晕大
+    this.glowPhase = Math.random()*Math.PI*2;
+    this.glowSpeed = 0.01 + 0.01*this.depth; // 减慢闪烁
+    this.glowColors = [
+      '255,255,255',  // 白色
+      '173,216,230',  // 浅蓝
+      '255,182,193',  // 浅粉
+      '240,255,255',  // 浅青
+      '255,240,245'   // 薄荷粉
+    ];
+    this.color = this.glowColors[Math.floor(Math.random()*this.glowColors.length)];
+  }
+
+  update(){
+    this.y += this.speedY;
+    this.x += this.speedX + Math.sin(this.angle*2)*0.5;
+    this.angle += this.rotationSpeed;
+    this.scale += Math.sin(this.angle*5)*0.002;
+
+    // 光晕闪烁
+    this.currentGlowOpacity = 0.2 + 0.3*Math.abs(Math.sin(this.glowPhase)); // 闪烁幅度小，更柔和
+    this.glowPhase += this.glowSpeed;
+
+    if(this.y>height) this.reset();
+    if(this.x>width) this.x=0;
+    if(this.x<0) this.x=width;
+  }
+
+  draw(){
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.angle);
+    ctx.scale(this.scale,this.scale);
+
+    // 光晕
+    const gradient = ctx.createRadialGradient(0,0,this.size*0.2,0,0,this.size+this.glow);
+    gradient.addColorStop(0, `rgba(${this.color},${this.currentGlowOpacity})`);
+    gradient.addColorStop(0.8, `rgba(${this.color},${this.currentGlowOpacity*0.2})`);
+    gradient.addColorStop(1, `rgba(${this.color},0)`);
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(0,0,this.size+this.glow,0,Math.PI*2);
+    ctx.fill();
+
+    // 雪花主体
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      ctx.moveTo(0,0);
+      ctx.lineTo(0,this.size);
+      ctx.rotate(Math.PI/3);
+    }
+    ctx.strokeStyle = `rgba(255,255,255,${this.opacity})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+const snowflakes = [];
+const SNOW_COUNT = 200;
+for(let i=0;i<SNOW_COUNT;i++){
+  snowflakes.push(new Snowflake());
+}
+
+function animate(){
+  ctx.clearRect(0,0,width,height);
+
+  for(const flake of snowflakes){
+    flake.update();
+    flake.draw();
+  }
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+
+
+
+
+</body>
+</html>
