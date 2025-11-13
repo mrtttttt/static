@@ -3,236 +3,426 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>项目导航 - 全屏风雪花</title>
+<title>应用导航中心</title>
 <style>
-  html, body {
+  * {
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  html, body {
     width: 100%;
     height: 100%;
-    font-family: 'Segoe UI', sans-serif;
-    color: #fff;
-    background-color: #0a0a0a;
+    overflow-x: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
 
   body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    position: relative;
+    justify-content: center;
+    min-height: 100vh;
+    color: #fff;
   }
 
-  canvas#snow {
+  /* 背景动画层 */
+  .bg-animation {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    z-index: 1;
   }
 
-  header {
-    text-align: center;
-    padding: 40px 20px 20px;
+  .bg-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    animation: float 20s infinite ease-in-out;
+  }
+
+  .bg-circle:nth-child(1) {
+    width: 300px;
+    height: 300px;
+    top: -150px;
+    left: -150px;
+    animation-delay: 0s;
+  }
+
+  .bg-circle:nth-child(2) {
+    width: 200px;
+    height: 200px;
+    bottom: -100px;
+    right: -100px;
+    animation-delay: 2s;
+  }
+
+  .bg-circle:nth-child(3) {
+    width: 400px;
+    height: 400px;
+    top: 50%;
+    right: -200px;
+    animation-delay: 4s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(30px, -30px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+  }
+
+  /* 容器 */
+  .container {
+    position: relative;
     z-index: 10;
-  }
-
-  header h1 {
-    font-size: 2.2rem;
-    margin: 0;
-    font-weight: 600;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
     width: 100%;
-    max-width: 1000px;
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 10;
+    max-width: 1200px;
+    padding: 40px 20px;
   }
 
-  .card {
+  /* 标题区域 */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeInDown 0.8s ease-out;
+  }
+
+  .header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    letter-spacing: 2px;
+  }
+
+  .header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+  }
+
+  /* 应用网格 */
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+  }
+
+  /* 应用卡片 */
+  .app-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 40px 30px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out;
+    animation-fill-mode: both;
+  }
+
+  .app-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .app-card:hover::before {
+    opacity: 1;
+  }
+
+  .app-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .app-card:nth-child(1) { animation-delay: 0.1s; }
+  .app-card:nth-child(2) { animation-delay: 0.2s; }
+  .app-card:nth-child(3) { animation-delay: 0.3s; }
+  .app-card:nth-child(4) { animation-delay: 0.4s; }
+
+  /* 图标容器 */
+  .app-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
     background: rgba(255, 255, 255, 0.15);
     border-radius: 20px;
-    padding: 10px 0px;
-    text-align: center;
-    color: #fff;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: transform 0.25s, box-shadow 0.25s;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    transition: all 0.3s ease;
   }
 
-  .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
-  }
-
-  .card img {
-    width: 70px;
-    height: 70px;
-  }
-
-  .card h3 {
-    margin: 10px 0;
-    font-size: 1.3rem;
-    font-weight: 500;
-  }
-
-  .btn {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 8px 18px;
-    border-radius: 30px;
+  .app-card:hover .app-icon {
+    transform: scale(1.1) rotate(5deg);
     background: rgba(255, 255, 255, 0.25);
+  }
+
+  /* 应用信息 */
+  .app-info {
+    text-align: center;
+  }
+
+  .app-info h3 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 10px;
     color: #fff;
-    font-size: 0.9rem;
+  }
+
+  .app-info p {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  /* 进入按钮 */
+  .app-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    color: #fff;
     text-decoration: none;
-    transition: background 0.3s;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
   }
 
-  .btn:hover {
-    background: rgba(255, 255, 255, 0.4);
+  .app-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateX(5px);
   }
 
-  @media (max-width: 600px) {
-    header h1 { font-size: 1.6rem; }
-    .card h3 { font-size: 1.1rem; }
-    .card img { width: 60px; height: 60px; }
+  .app-btn::after {
+    content: '→';
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+  }
+
+  .app-btn:hover::after {
+    transform: translateX(5px);
+  }
+
+  /* 页脚 */
+  .footer {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin-top: 60px;
+    padding: 20px;
+    opacity: 0.7;
+    font-size: 0.9rem;
+  }
+
+  /* 动画定义 */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .header h1 {
+      font-size: 2rem;
+    }
+
+    .header p {
+      font-size: 1rem;
+    }
+
+    .apps-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .app-card {
+      padding: 30px 20px;
+    }
+
+    .app-icon {
+      width: 70px;
+      height: 70px;
+      font-size: 2.5rem;
+    }
+
+    .app-info h3 {
+      font-size: 1.4rem;
+    }
+  }
+
+  /* 添加应用卡片（占位） */
+  .app-card.add-new {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+  }
+
+  .app-card.add-new:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .add-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+  }
+
+  .add-text {
+    font-size: 1.1rem;
+    opacity: 0.6;
   }
 </style>
 </head>
 <body>
-<canvas id="snow"></canvas>
 
+<!-- 背景动画 -->
+<div class="bg-animation">
+  <div class="bg-circle"></div>
+  <div class="bg-circle"></div>
+  <div class="bg-circle"></div>
+</div>
 
-<div class="grid">
-  <div class="card" onclick="go('/album/')">
-    <img src="https://img.icons8.com/fluency/96/photo-album.png" alt="相册">
-    <h3>相册</h3>
-    <a class="btn" href="/album/">进入</a>
+<!-- 主容器 -->
+<div class="container">
+  <!-- 标题 -->
+  <div class="header">
+    <h1>应用导航中心</h1>
+    <p>选择你想要进入的应用</p>
+  </div>
+
+  <!-- 应用网格 -->
+  <div class="apps-grid">
+    <!-- 相册应用 -->
+    <div class="app-card" onclick="location.href='/album/'">
+      <div class="app-icon">📸</div>
+      <div class="app-info">
+        <h3>记忆相册</h3>
+        <p>保存和浏览你的美好回忆，记录生活中的每一个精彩瞬间</p>
+        <a href="/album/" class="app-btn">进入应用</a>
+      </div>
+    </div>
+
+    <!-- 待办清单应用 -->
+    <div class="app-card" onclick="location.href='/todo/'">
+      <div class="app-icon">✅</div>
+      <div class="app-info">
+        <h3>待办清单</h3>
+        <p>高效管理你的任务和目标，让每一天都井井有条充实高效</p>
+        <a href="/todo/" class="app-btn">进入应用</a>
+      </div>
+    </div>
+
+    <!-- 占位卡片 - 未来可以添加更多应用 -->
+    <div class="app-card add-new">
+      <div class="add-icon">+</div>
+      <div class="add-text">敬请期待更多应用...</div>
+    </div>
   </div>
 </div>
 
-<script>
-// ----------------- 全屏雪花 + 立体感光晕 -----------------
-const canvas = document.getElementById('snow');
-const ctx = canvas.getContext('2d');
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
+<!-- 页脚 -->
+<div class="footer">
+  <p>© 2024 应用导航中心 · 持续更新中</p>
+</div>
 
-window.addEventListener('resize', ()=>{
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
+<script>
+// 添加键盘导航支持
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    const focusedCard = document.activeElement;
+    if (focusedCard.classList.contains('app-card') && !focusedCard.classList.contains('add-new')) {
+      focusedCard.click();
+    }
+  }
 });
 
-class Snowflake {
-  constructor(){
-    this.reset(true);
-  }
+// 让卡片可以通过键盘聚焦
+document.querySelectorAll('.app-card:not(.add-new)').forEach(card => {
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('role', 'button');
+});
 
-  reset(init=false){
-    this.x = Math.random()*width;
-    this.y = init ? Math.random()*height : -10;
-    this.depth = Math.random(); // 0-1 深度，用于远近感
-    this.size = 2 + 2*this.depth; // 2~4px
-    this.speedY = 0.5 + 1.0*this.depth; // 远的慢，近的快
-    this.speedX = Math.random()*0.5 - 0.25;
-    this.opacity = 0.5 + 0.5*this.depth; // 雪花主体亮度
-    this.angle = Math.random()*Math.PI*2;
-    this.rotationSpeed = (Math.random()*0.01 - 0.005);
-    this.scale = 0.7 + 0.3*this.depth;
-
-    // 光晕属性
-    this.glow = 3 + 3*this.depth; // 远的光晕小，近的光晕大
-    this.glowPhase = Math.random()*Math.PI*2;
-    this.glowSpeed = 0.01 + 0.01*this.depth; // 减慢闪烁
-    this.glowColors = [
-      '255,255,255',  // 白色
-      '173,216,230',  // 浅蓝
-      '255,182,193',  // 浅粉
-      '240,255,255',  // 浅青
-      '255,240,245'   // 薄荷粉
-    ];
-    this.color = this.glowColors[Math.floor(Math.random()*this.glowColors.length)];
-  }
-
-  update(){
-    this.y += this.speedY;
-    this.x += this.speedX + Math.sin(this.angle*2)*0.5;
-    this.angle += this.rotationSpeed;
-    this.scale += Math.sin(this.angle*5)*0.002;
-
-    // 光晕闪烁
-    this.currentGlowOpacity = 0.2 + 0.3*Math.abs(Math.sin(this.glowPhase)); // 闪烁幅度小，更柔和
-    this.glowPhase += this.glowSpeed;
-
-    if(this.y>height) this.reset();
-    if(this.x>width) this.x=0;
-    if(this.x<0) this.x=width;
-  }
-
-  draw(){
-    ctx.save();
-    ctx.translate(this.x,this.y);
-    ctx.rotate(this.angle);
-    ctx.scale(this.scale,this.scale);
-
-    // 光晕
-    const gradient = ctx.createRadialGradient(0,0,this.size*0.2,0,0,this.size+this.glow);
-    gradient.addColorStop(0, `rgba(${this.color},${this.currentGlowOpacity})`);
-    gradient.addColorStop(0.8, `rgba(${this.color},${this.currentGlowOpacity*0.2})`);
-    gradient.addColorStop(1, `rgba(${this.color},0)`);
-
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(0,0,this.size+this.glow,0,Math.PI*2);
-    ctx.fill();
-
-    // 雪花主体
-    ctx.beginPath();
-    for(let i=0;i<6;i++){
-      ctx.moveTo(0,0);
-      ctx.lineTo(0,this.size);
-      ctx.rotate(Math.PI/3);
+// 添加平滑滚动
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
-    ctx.strokeStyle = `rgba(255,255,255,${this.opacity})`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+  });
+});
 
-    ctx.restore();
-  }
-}
+// 添加鼠标移动视差效果
+let mouseX = 0;
+let mouseY = 0;
 
-const snowflakes = [];
-const SNOW_COUNT = 200;
-for(let i=0;i<SNOW_COUNT;i++){
-  snowflakes.push(new Snowflake());
-}
+document.addEventListener('mousemove', function(e) {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 20;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 20;
 
-function animate(){
-  ctx.clearRect(0,0,width,height);
-
-  for(const flake of snowflakes){
-    flake.update();
-    flake.draw();
-  }
-  requestAnimationFrame(animate);
-}
-
-animate();
+  document.querySelectorAll('.bg-circle').forEach((circle, index) => {
+    const speed = (index + 1) * 0.5;
+    circle.style.transform = `translate(${mouseX * speed}px, ${mouseY * speed}px)`;
+  });
+});
 </script>
-
-
-
-
 
 </body>
 </html>
